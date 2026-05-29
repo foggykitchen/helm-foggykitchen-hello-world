@@ -25,7 +25,7 @@ steps:
       set -euo pipefail
       export BUILDRUN_HASH="$(echo "${OCI_BUILD_RUN_ID}" | rev | cut -c 1-7)"
       export IMAGE_TAG="0.1.0-${BUILDRUN_HASH}"
-      export CHART_VERSION="0.1.0-${BUILDRUN_HASH}"
+      export CHART_VERSION="0.1.0"
       echo "BUILDRUN_HASH: ${BUILDRUN_HASH}"
       echo "IMAGE_TAG: ${IMAGE_TAG}"
       echo "CHART_VERSION: ${CHART_VERSION}"
