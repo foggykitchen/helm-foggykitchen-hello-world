@@ -38,7 +38,7 @@ steps:
 
       APP_SOURCE_DIR="${OCI_WORKSPACE_DIR}/foggykitchen-hello-world"
       if [ ! -d "${APP_SOURCE_DIR}" ]; then
-        DOCKERFILE_PATH="$(find "${OCI_WORKSPACE_DIR}" -maxdepth 3 -type f -name Dockerfile -path '*/foggykitchen-hello-world/*' -print -quit || true)"
+        DOCKERFILE_PATH="$(find "${OCI_WORKSPACE_DIR}" -maxdepth 5 -type f -name Dockerfile ! -path '*/.git/*' -print -quit || true)"
         if [ -n "${DOCKERFILE_PATH}" ]; then
           APP_SOURCE_DIR="$(dirname "${DOCKERFILE_PATH}")"
         else
