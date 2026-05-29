@@ -61,6 +61,8 @@ steps:
     name: "Package and push Helm chart"
     command: |
       set -euo pipefail
+      BUILDRUN_HASH="$(echo "${OCI_BUILD_RUN_ID}" | rev | cut -c 1-7)"
+      CHART_VERSION="0.1.0"
       HELM_SOURCE_DIR="${OCI_PRIMARY_SOURCE_DIR:-${OCI_WORKSPACE_DIR}/helm-foggykitchen-hello-world}"
       cd "${HELM_SOURCE_DIR}/helm/helm-foggykitchen-hello-world-chart"
 
