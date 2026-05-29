@@ -19,19 +19,50 @@ env:
 
 steps:
   - type: Command
-    name: "Define unique chart version suffix"
+    name: "Define build version suffix"
     timeoutInSeconds: 40
     command: |
-      export BUILDRUN_HASH=$(echo "${OCI_BUILD_RUN_ID}" | rev | cut -c 1-7)
+      set -euo pipefail
+      export BUILDRUN_HASH="$(echo "${OCI_BUILD_RUN_ID}" | rev | cut -c 1-7)"
+      export IMAGE_TAG="0.1.0-${BUILDRUN_HASH}"
+      export CHART_VERSION="0.1.0-${BUILDRUN_HASH}"
       echo "BUILDRUN_HASH: ${BUILDRUN_HASH}"
-  
+      echo "IMAGE_TAG: ${IMAGE_TAG}"
+      echo "CHART_VERSION: ${CHART_VERSION}"
+
+  - type: Command
+    timeoutInSeconds: 1800
+    name: "Build and push container image"
+    command: |
+      set -euo pipefail
+
+      APP_SOURCE_DIR="${OCI_WORKSPACE_DIR}/foggykitchen-hello-world"
+      if [ ! -d "${APP_SOURCE_DIR}" ]; then
+        APP_SOURCE_DIR="$(find "${OCI_WORKSPACE_DIR}" -maxdepth 2 -type f -name Dockerfile -path '*foggykitchen-hello-world*' -print -quit | xargs dirname)"
+      fi
+
+      if [ -z "${APP_SOURCE_DIR}" ] || [ ! -d "${APP_SOURCE_DIR}" ]; then
+        echo "Application source directory for foggykitchen-hello-world was not found."
+        exit 1
+      fi
+
+      echo "Using app source directory: ${APP_SOURCE_DIR}"
+      cd "${APP_SOURCE_DIR}"
+
+      podman login "${OCI_REGISTRY}" -u "${OCIR_USER_NAME}" -p "${USER_AUTH_TOKEN}"
+      podman build --pull --rm -t "${IMAGE_REPO_PREFIX}:${IMAGE_TAG}" .
+      podman push "${IMAGE_REPO_PREFIX}:${IMAGE_TAG}"
+
   - type: Command
     timeoutInSeconds: 1200
     name: "Package and push Helm chart"
     command: |
-      cd "${OCI_PRIMARY_SOURCE_DIR:-${OCI_WORKSPACE_DIR}/helm-foggykitchen-hello-world}/helm/helm-foggykitchen-hello-world-chart"
-      CHART_VERSION="0.1.0-${BUILDRUN_HASH}"
+      set -euo pipefail
+      HELM_SOURCE_DIR="${OCI_PRIMARY_SOURCE_DIR:-${OCI_WORKSPACE_DIR}/helm-foggykitchen-hello-world}"
+      cd "${HELM_SOURCE_DIR}/helm/helm-foggykitchen-hello-world-chart"
+
       echo "Packaging chart version ${CHART_VERSION}"
+      rm -f ./*.tgz
       helm package . --version "${CHART_VERSION}" --app-version "${BUILDRUN_HASH}"
-      helm registry login ${HELM_REPO} -u ${HELM_REPO_USER} -p ${USER_AUTH_TOKEN}
-      helm push *.tgz ${HELM_REPO_URL}
+      helm registry login "${OCI_REGISTRY}" -u "${OCIR_USER_NAME}" -p "${USER_AUTH_TOKEN}"
+      helm push ./*.tgz "${HELM_REPO_URL}"
