@@ -1,7 +1,6 @@
 apiVersion: v2
 name: helm-foggykitchen-hello-world-chart
-description: Helm FoggyKitchen Hello World Chart
+description: FoggyKitchen Hello World Helm chart for OCI DevOps and OKE deployment patterns
 type: application
-#version: 0.1.0-${BUILDRUN_HASH}
 version: 0.1.0
-appVersion: "1.16.0"
+appVersion: "latest"

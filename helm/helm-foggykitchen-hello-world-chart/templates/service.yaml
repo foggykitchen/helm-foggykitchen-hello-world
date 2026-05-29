@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "foggykitchen-hello-world.fullname" . }}
+  labels:
+    {{- include "foggykitchen-hello-world.labels" . | nindent 4 }}
+  annotations:
+    oci.oraclecloud.com/load-balancer-type: "{{ .Values.loadBalancer.type }}"
+    service.beta.kubernetes.io/oci-load-balancer-shape: "{{ .Values.loadBalancer.shape }}"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "{{ .Values.loadBalancer.minShape }}"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "{{ .Values.loadBalancer.maxShape }}"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "foggykitchen-hello-world.selectorLabels" . | nindent 4 }}
