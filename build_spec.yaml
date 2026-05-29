@@ -54,9 +54,7 @@ steps:
       echo "Using app source directory: ${APP_SOURCE_DIR}"
       cd "${APP_SOURCE_DIR}"
 
-      podman login "${OCI_REGISTRY}" -u "${OCIR_USER_NAME}" -p "${USER_AUTH_TOKEN}"
-      podman build --pull --rm -t "${IMAGE_REPO_PREFIX}:${IMAGE_TAG}" .
-      podman push "${IMAGE_REPO_PREFIX}:${IMAGE_TAG}"
+      podman build --pull --rm -t foggykitchen-hello-world:latest .
 
   - type: Command
     timeoutInSeconds: 1200
@@ -71,3 +69,8 @@ steps:
       helm package . --version "${CHART_VERSION}" --app-version "${BUILDRUN_HASH}"
       helm registry login "${OCI_REGISTRY}" -u "${OCIR_USER_NAME}" -p "${USER_AUTH_TOKEN}"
       helm push ./*.tgz "${HELM_REPO_URL}"
+
+outputArtifacts:
+  - name: APPLICATION_DOCKER_IMAGE
+    type: DOCKER_IMAGE
+    location: foggykitchen-hello-world:latest
