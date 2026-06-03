@@ -9,6 +9,8 @@ It is intentionally separate from the application repository:
 
 That split keeps build and deploy responsibilities clean and composable.
 
+Support expectations are documented in [SUPPORT.md](SUPPORT.md).
+
 ---
 
 ## Purpose
